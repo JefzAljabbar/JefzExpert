@@ -5,81 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>JefzExpert</title>
+<link rel="stylesheet" href="cm/codemirror.css">
+<link rel="stylesheet" href="cm/show-hint.css">
 <style>
 :root{--bg:#131a24;--pn:#1b2431;--ln:#2a3646;--tx:#e7ecf3;--mu:#8a97a9;--ok:#2fa57a;--er:#d9475f;--am:#e3a73c}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
-header{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--ln)}
-header b{font-size:17px}
-main{flex:1;min-height:0;overflow:auto;padding:10px}
-section{display:none;height:100%}section.on{display:flex;flex-direction:column;gap:8px}
-button,select,input{font:inherit;color:var(--tx);background:var(--pn);border:1px solid var(--ln);border-radius:9px;min-height:42px;padding:6px 10px}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+button,select,input{font:inherit;color:var(--tx);background:var(--pn);border:1px solid var(--ln);border-radius:9px;min-height:40px;padding:4px 10px}
 button:active{background:var(--ln)}
-button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--am)}
-.bar{display:flex;gap:6px;flex-wrap:wrap}
-.bar>*{flex:1 1 auto}
-#ed{flex:1;min-height:200px;width:100%;resize:none;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);background:#0f151e;border:1px solid var(--ln);border-radius:9px;padding:10px;white-space:pre;overflow:auto;tab-size:3}
-#info{font-size:12px;color:var(--mu)}
-#out{font-size:13px;max-height:110px;overflow:auto}
-#out div{padding:2px 0}.e{color:var(--er)}.g{color:var(--ok)}.w{color:var(--am)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
-.grid input{width:100%}
-.card{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:12px}
-nav{display:flex;border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;border:0;border-radius:0;background:none;min-height:50px;color:var(--mu)}
-nav button.on{color:var(--tx);box-shadow:inset 0 2px 0 var(--am)}
-.mu{color:var(--mu);font-size:13px}
+:focus-visible{outline:2px solid var(--am)}
+.tb{display:flex;gap:6px;padding:6px 8px;overflow-x:auto;border-bottom:1px solid var(--ln)}
+.tb>*{flex:0 0 auto}
+#wrap{flex:1;min-height:0;position:relative}
+#wrap .CodeMirror{position:absolute;inset:0;height:auto;background:#0f151e;color:var(--tx);font:13px/1.45 ui-monospace,Menlo,Consolas,monospace}
+.CodeMirror-gutters{background:#0f151e;border-right:1px solid var(--ln)}
+.CodeMirror-linenumber{color:var(--mu)}
+.CodeMirror-cursor{border-left:2px solid var(--am)}
+.CodeMirror-selected{background:#2a3c55!important}
+.cm-keyword{color:#e07fa0}.cm-type{color:#6fb3e0}.cm-builtin{color:#7fd1a8}.cm-atom{color:#e3a73c}.cm-number{color:#d9a76b}.cm-string{color:#c3d98a}.cm-comment{color:#6b7a8c;font-style:italic}.cm-meta{color:#b79ae0}.cm-def{color:#f0d08a}
+.CodeMirror-hints{background:var(--pn);border:1px solid var(--ln);z-index:30}
+.CodeMirror-hint{color:var(--tx)}
+li.CodeMirror-hint-active{background:var(--ln);color:var(--tx)}
+#st{display:flex;justify-content:space-between;gap:8px;padding:4px 10px;font-size:12px;color:var(--mu);border-top:1px solid var(--ln)}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;z-index:50}
+#ov.on{display:flex}
+#md{background:var(--pn);border:1px solid var(--ln);border-radius:14px 14px 0 0;width:100%;max-width:560px;max-height:82vh;overflow:auto;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+#md h3{margin:0 0 8px;font-size:16px}
+.r{display:flex;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--ln)}
+.r>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.r select{max-width:50%}
+.r input[type=checkbox]{min-height:0;width:22px;height:22px}
+.mu{color:var(--mu);font-size:13px}.ok{background:var(--ok);border-color:var(--ok);font-weight:700}
+.bt{display:flex;gap:8px;margin-top:10px}.bt>*{flex:1}
 </style>
 </head>
 <body>
-<header><b>JefzExpert</b><span class="mu">Pembuat EA MQL4</span></header>
-<main>
-<section id="t-ed" class="on">
-  <div class="bar">
-    <input id="nm" aria-label="Nama file" style="flex:2 1 120px" placeholder="NamaEA">
-    <select id="snip" aria-label="Sisipkan potongan kode"><option value="">Sisipkan kode...</option></select>
-  </div>
-  <textarea id="ed" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor MQL4"></textarea>
-  <div id="info"></div>
-  <div class="bar">
-    <button id="bNew">Baru</button>
-    <label class="bar" style="margin:0"><button type="button" id="bOpen" style="flex:1">Buka</button></label>
-    <button id="bChk">Cek</button>
-    <button id="bCopy">Salin</button>
-    <button id="bSave" style="background:var(--ok);border-color:var(--ok);font-weight:700">Simpan .mq4</button>
-  </div>
-  <input id="file" type="file" accept=".mq4,.mqh,.txt" hidden>
-  <div id="out"></div>
-</section>
-
-<section id="t-gen">
-  <div class="card mu">Isi parameter, lalu buat kode. Hasilnya masuk ke Editor dan bisa kamu ubah. Satuan jarak dalam poin (Point).</div>
-  <div class="grid" id="gf"></div>
-  <button id="bGen" style="background:var(--ok);border-color:var(--ok);font-weight:700">Buat kode Grid + Marti + Trailing</button>
-</section>
-
-<section id="t-test">
-  <div class="card"><b>Strategy Tester</b>
-    <p class="mu">Dibangun di tahap 3: impor CSV, pilihan mode tick (tick asli, dibangkitkan dari M1, 1 menit OHLC, Open prices only), pembacaan per rentang tanggal, dan laporan ala MT5.</p>
-  </div>
-</section>
-</main>
-<nav>
-  <button class="on" data-t="t-ed">Editor</button>
-  <button data-t="t-gen">Generator</button>
-  <button data-t="t-test">Tester</button>
-</nav>
-
+<div class="tb">
+  <input id="nm" aria-label="Nama file" placeholder="NamaEA" style="width:120px">
+  <button id="bPre">Preset</button><button id="bFn">Fungsi</button><button id="bIE">Impor/Ekspor</button>
+  <button id="bChk">Cek</button><button id="bCopy">Salin</button><button id="bSave" class="ok">Simpan .mq4</button>
+</div>
+<div id="wrap"><textarea id="ed"></textarea></div>
+<div id="st"><span id="inf"></span><span id="msg"></span></div>
+<div id="ov"><div id="md" role="dialog" aria-modal="true"></div></div>
+<input id="file" type="file" accept=".mqh,.mq4,.txt" hidden>
+<script src="cm/codemirror.js"></script>
+<script src="cm/clike.js"></script>
+<script src="cm/show-hint.js"></script>
 <script>
 (function(){
 'use strict';
 var $=function(s){return document.querySelector(s)};
-var K='jefzexpert.v2',ed=$('#ed'),nm=$('#nm'),out=$('#out');
-var st={name:'JefzGrid',code:''};
-try{Object.assign(st,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
-
+var K='jefzexpert.v3',S={name:'JefzGrid',code:'',presets:{},lib:{}};
+try{Object.assign(S,JSON.parse(localStorage.getItem(K)||localStorage.getItem('jefzexpert.v2')||'{}'))}catch(e){}
+S.presets=S.presets||{};S.lib=S.lib||{};
+function persist(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+function say(t,c){var m=$('#msg');m.textContent=t;m.style.color=c||''}
 /* ---------- EA generator (MQL4) ---------- */
 function ea(p){return `//+------------------------------------------------------------------+
 //| ${p.name}.mq4 - dibuat JefzExpert
@@ -129,7 +111,7 @@ double EntryDist()
 void Scan(int &mkt, int &pend, int &dir, double &lastLot, double &lastPrice, double &profit)
 {
    mkt = 0; pend = 0; dir = -1; lastLot = 0; lastPrice = 0; profit = 0;
-   datetime lastTime = 0;
+   int lastTicket = 0;
    for(int i = OrdersTotal() - 1; i >= 0; i--)
    {
       if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) continue;
@@ -140,9 +122,9 @@ void Scan(int &mkt, int &pend, int &dir, double &lastLot, double &lastPrice, dou
          mkt++;
          dir = t;
          profit += OrderProfit() + OrderSwap() + OrderCommission();
-         if(OrderOpenTime() >= lastTime)
+         if(OrderTicket() > lastTicket)
          {
-            lastTime = OrderOpenTime();
+            lastTicket = OrderTicket();
             lastLot = OrderLots();
             lastPrice = OrderOpenPrice();
          }
@@ -307,32 +289,7 @@ void OnTick()
    return((Ask - Bid) / Point <= maxPts);
 }
 `};
-var sel=$('#snip');Object.keys(SN).forEach(function(k){var o=document.createElement('option');o.textContent=k;sel.appendChild(o)});
-sel.addEventListener('change',function(){var t=SN[sel.value];if(t){var s=ed.selectionStart;ed.setRangeText(t,s,ed.selectionEnd,'end');ed.focus();upd()}sel.selectedIndex=0});
 
-/* ---------- editor ---------- */
-function msg(t,c){var d=document.createElement('div');if(c)d.className=c;d.textContent=t;out.appendChild(d);out.scrollTop=out.scrollHeight}
-function clr(){out.textContent=''}
-function upd(){st.code=ed.value;st.name=nm.value;$('#info').textContent=ed.value.split('\n').length+' baris, '+ed.value.length+' karakter';try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}
-function fname(){return (nm.value||'EA').replace(/[^\w-]/g,'_')+'.mq4'}
-ed.value=st.code;nm.value=st.name;upd();
-ed.addEventListener('input',upd);nm.addEventListener('input',upd);
-ed.addEventListener('keydown',function(e){if(e.key==='Tab'){e.preventDefault();ed.setRangeText('   ',ed.selectionStart,ed.selectionEnd,'end');upd()}});
-
-$('#bNew').addEventListener('click',function(){if(ed.value&&!confirm('Hapus isi editor?'))return;ed.value=SN['Kerangka EA kosong'];nm.value='EAbaru';clr();upd()});
-$('#bOpen').addEventListener('click',function(){$('#file').click()});
-$('#file').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){ed.value=String(r.result);nm.value=f.name.replace(/\.[^.]+$/,'');clr();upd();msg('Dibuka: '+f.name,'g')};r.readAsText(f);e.target.value=''});
-$('#bCopy').addEventListener('click',function(){clr();var done=function(){msg('Kode disalin.','g')};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ed.value).then(done,function(){ed.select();document.execCommand('copy');done()});else{ed.select();document.execCommand('copy');done()}});
-$('#bSave').addEventListener('click',async function(){
-  clr();var code=ed.value,fn=fname(),P=window.Capacitor&&window.Capacitor.Plugins;
-  if(P&&P.Filesystem&&P.Share){
-    try{var r=await P.Filesystem.writeFile({path:fn,data:code,directory:'CACHE',encoding:'utf8'});await P.Share.share({title:fn,url:r.uri,dialogTitle:'Simpan atau kirim '+fn});return}
-    catch(e){msg('Gagal membagikan: '+(e.message||e),'e')}
-  }
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/plain'}));a.download=fn;document.body.appendChild(a);a.click();a.remove();msg('Diunduh: '+fn,'g');
-});
-
-/* ---------- cek dasar ---------- */
 function lint(c){
   var o=[],s=[],i=0,ln=1,pr={')':'(',']':'[','}':'{'};
   while(i<c.length){var ch=c[i],n=c[i+1];
@@ -347,24 +304,123 @@ function lint(c){
   if(!/\bOnTick\s*\(|\bstart\s*\(/.test(c))o.push('Tidak ada OnTick() atau start().');
   if(/\b(CTrade|PositionSelect|PositionGetDouble|MqlTradeRequest)\b/.test(c))o.push('Terdeteksi sintaks MQL5. MT4 butuh MQL4.');
   return o}
-$('#bChk').addEventListener('click',function(){clr();var r=lint(ed.value);if(!r.length)msg('Kurung, kutip, dan OnTick() beres. Kompilasi penuh tetap di MetaEditor (F7).','g');else r.forEach(function(x){msg(x,'e')})});
 
-/* ---------- generator ---------- */
-var F=[['name','Nama EA','JefzGrid','text'],['magic','Magic number',20261124],['lot','Lot awal',0.01],['mul','Pengali lot (marti)',2],['lv','Maks level',6],['maxlot','Lot maksimum',1],['grid','Jarak grid (poin)',200],['entry','Jarak order stop (poin)',150],['trail','Langkah trailing (poin)',50],['tp','Target profit keranjang',5],['eq','Stop ekuitas (%)',30],['spr','Maks spread (poin)',30]];
-var gf=$('#gf');
-F.forEach(function(f){var d=document.createElement('div');var l=document.createElement('label');l.textContent=f[1];l.htmlFor='g_'+f[0];var i=document.createElement('input');i.id='g_'+f[0];i.value=f[2];if(f[3]!=='text'){i.type='number';i.inputMode='decimal';i.step='any'}d.appendChild(l);d.appendChild(i);gf.appendChild(d)});
-$('#bGen').addEventListener('click',function(){
-  var p={},bad=null;
-  F.forEach(function(f){var v=$('#g_'+f[0]).value.trim();if(f[3]==='text')p[f[0]]=v.replace(/[^\w-]/g,'')||'JefzGrid';else{var n=parseFloat(v);if(isNaN(n)||n<0)bad=f[1];p[f[0]]=n}});
-  if(bad){alert('Nilai tidak valid: '+bad);return}
-  if(p.lv<1||p.mul<1||p.lot<=0){alert('Maks level minimal 1, pengali minimal 1, lot awal harus lebih dari 0.');return}
-  if(ed.value&&!confirm('Ganti isi editor dengan kode baru?'))return;
-  ed.value=ea(p);nm.value=p.name;clr();upd();tab('t-ed');msg('Kode dibuat. Uji di akun demo sebelum akun real.','g');
-});
+/* ---------- mode MQL4 + kamus ---------- */
+var API={Order:'OrderSend OrderModify OrderClose OrderDelete OrderSelect OrdersTotal OrderType OrderTicket OrderLots OrderOpenPrice OrderStopLoss OrderTakeProfit OrderProfit OrderSwap OrderCommission OrderMagicNumber OrderSymbol OrderOpenTime OrderComment',
+Akun:'AccountBalance AccountEquity AccountFreeMargin',
+Pasar:'MarketInfo Bid Ask Point Digits Symbol RefreshRates',
+Matematika:'MathAbs MathMax MathMin MathFloor MathCeil MathPow MathRound NormalizeDouble',
+Util:'Print Alert Comment GetLastError TimeCurrent DoubleToString IntegerToString',
+Konstanta:'OP_BUY OP_SELL OP_BUYSTOP OP_SELLSTOP OP_BUYLIMIT OP_SELLLIMIT SELECT_BY_POS SELECT_BY_TICKET MODE_TRADES MODE_POINT MODE_STOPLEVEL MODE_LOTSTEP MODE_MINLOT MODE_MAXLOT MODE_TICKVALUE MODE_TICKSIZE clrBlue clrRed clrNONE INIT_SUCCEEDED'};
+var ALL=Object.keys(API).map(function(k){return API[k]}).join(' ');
+function W(s){var o={};s.split(' ').forEach(function(w){o[w]=true});return o}
+CodeMirror.defineMIME('text/x-mql4',{name:'clike',keywords:W('extern input static const if else for while do switch case default break continue return true false'),types:W('int double bool string datetime color void long uint char short'),builtin:W(ALL),atoms:W('NULL'),hooks:{'#':function(s){s.skipToEnd();return 'meta'}}});
+function defaultEA(){return ea({name:'JefzGrid',magic:20261124,lot:0.01,mul:2,lv:6,maxlot:1,grid:200,entry:150,trail:50,tp:5,eq:30,spr:30})}
 
-/* ---------- tab ---------- */
-function tab(id){document.querySelectorAll('section').forEach(function(s){s.classList.toggle('on',s.id===id)});document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.t===id)})}
-document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){tab(b.dataset.t)})});
+var cm=CodeMirror.fromTextArea($('#ed'),{mode:'text/x-mql4',lineNumbers:true,indentUnit:3,tabSize:3});
+cm.setValue(S.code||SN['Kerangka EA kosong']);$('#nm').value=S.name;
+function info(){$('#inf').textContent=cm.lineCount()+' baris'}
+cm.on('change',function(){S.code=cm.getValue();persist();info()});info();
+$('#nm').addEventListener('input',function(){S.name=this.value;persist()});
+function fname(){return (S.name||'EA').replace(/[^\w-]/g,'_')+'.mq4'}
+
+/* ---------- parser fungsi ---------- */
+function fns(code){
+  code=code==null?cm.getValue():code;
+  var r=[],d=0,i=0,n=code.length,head=0,cand=null;
+  while(i<n){var c=code[i],x=code[i+1];
+    if(c==='/'&&x==='/'){while(i<n&&code[i]!=='\n')i++;continue}
+    if(c==='/'&&x==='*'){i=code.indexOf('*/',i+2);i=i<0?n:i+2;continue}
+    if(c==='"'||c==="'"){var q=c;i++;while(i<n&&code[i]!==q&&code[i]!=='\n'){if(code[i]==='\\')i++;i++}i++;continue}
+    if(c==='{'){
+      if(d===0){var h=code.slice(head,i),m=/(^|\n)[ \t]*((?:[A-Za-z_]\w*[ \t]+)+([A-Za-z_]\w*)[ \t]*\([^)]*\))\s*(?:\/\/[^\n]*\s*)*$/.exec(h);
+        cand=m?{name:m[3],start:head+m.index+m[1].length}:null}
+      d++}
+    else if(c==='}'){d--;if(d===0){if(cand){cand.end=i+1;cand.start+=code.slice(cand.start).search(/\S/);r.push(cand);cand=null}head=i+1}}
+    else if(c===';'&&d===0)head=i+1;
+    i++}
+  return r}
+
+/* ---------- modal ---------- */
+function el(t,p,k){var e=document.createElement(t);if(p)for(var a in p)e[a]=p[a];(k||[]).forEach(function(c){e.appendChild(typeof c==='string'?document.createTextNode(c):c)});return e}
+function modal(title,build){var m=$('#md');m.textContent='';m.appendChild(el('h3',{textContent:title}));build(m);$('#ov').classList.add('on')}
+function close(){$('#ov').classList.remove('on')}
+$('#ov').addEventListener('click',function(e){if(e.target===this)close()});
+function btn(t,f,c){return el('button',{textContent:t,onclick:f,className:c||''})}
+function ask(text,yes){return new Promise(function(res){modal('Konfirmasi',function(m){m.appendChild(el('p',{textContent:text}));m.appendChild(el('div',{className:'bt'},[btn('Batal',function(){close();res(false)}),btn(yes||'Ya, lanjut',function(){close();res(true)},'ok')]))})})}
+function nameBox(title,val){return new Promise(function(res){modal(title,function(m){var i=el('input',{value:val||''});i.style.width='100%';m.appendChild(i);m.appendChild(el('div',{className:'bt'},[btn('Batal',function(){close();res(null)}),btn('Simpan',function(){var v=i.value.trim();if(v){close();res(v)}},'ok')]));setTimeout(function(){i.focus()},60)})})}
+function put(t){close();cm.replaceSelection(t);cm.focus()}
+
+/* ---------- preset ---------- */
+function presetUI(){modal('Preset kode',function(m){
+  m.appendChild(btn('Simpan kode sekarang sebagai preset',async function(){var n=await nameBox('Nama preset',S.name);if(!n){presetUI();return}if(S.presets[n]&&!(await ask('Preset "'+n+'" sudah ada. Timpa?'))){presetUI();return}S.presets[n]=cm.getValue();persist();say('Preset disimpan: '+n,'var(--ok)');presetUI()}));
+  [['Grid + Marti + Trailing (bawaan)',null]].concat(Object.keys(S.presets).map(function(k){return [k,k]})).forEach(function(it){
+    var r=el('div',{className:'r'},[el('span',{textContent:it[0]}),btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+it[0]+'"? Kode sekarang tertimpa.'))){presetUI();return}cm.setValue(it[1]?S.presets[it[1]]:defaultEA());close()})]);
+    if(it[1])r.appendChild(btn('Hapus',async function(){if(await ask('Hapus preset "'+it[1]+'"?','Ya, hapus')){delete S.presets[it[1]];persist()}presetUI()}));
+    m.appendChild(r)})})}
+
+/* ---------- fungsi ---------- */
+function fnUI(){var F=fns();modal('Fungsi',function(m){
+  m.appendChild(el('div',{className:'mu',textContent:'Di EA ini (ketuk nama untuk lompat):'}));
+  if(!F.length)m.appendChild(el('div',{className:'mu',textContent:'Belum ada fungsi.'}));
+  F.forEach(function(f){m.appendChild(el('div',{className:'r'},[
+    el('span',{textContent:f.name,onclick:function(){close();cm.setCursor(cm.posFromIndex(f.start));cm.focus()}}),
+    btn('Ke pustaka',async function(){var t=cm.getValue().slice(f.start,f.end);if(S.lib[f.name]&&!(await ask('Pustaka sudah punya "'+f.name+'". Timpa?'))){fnUI();return}S.lib[f.name]=t;persist();say('Masuk pustaka: '+f.name,'var(--ok)');fnUI()}),
+    btn('Hapus',async function(){if(await ask('Hapus fungsi "'+f.name+'" dari editor?','Ya, hapus')){var g=fns().filter(function(x){return x.name===f.name})[0];if(g)cm.replaceRange('',cm.posFromIndex(g.start),cm.posFromIndex(g.end))}fnUI()})]))});
+  m.appendChild(el('h3',{textContent:'Pustaka fungsi',style:'margin-top:14px'}));
+  var L=Object.keys(S.lib);if(!L.length)m.appendChild(el('div',{className:'mu',textContent:'Kosong. Pakai "Ke pustaka" di atas.'}));
+  L.forEach(function(k){m.appendChild(el('div',{className:'r'},[el('span',{textContent:k}),btn('Sisipkan',function(){put('\n'+S.lib[k]+'\n')}),btn('Hapus',async function(){if(await ask('Hapus "'+k+'" dari pustaka?','Ya, hapus')){delete S.lib[k];persist()}fnUI()})]))});
+  m.appendChild(el('h3',{textContent:'Sisipkan kode MQL4',style:'margin-top:14px'}));
+  var g=el('div',{className:'bt',style:'flex-wrap:wrap'});
+  Object.keys(API).forEach(function(k){var s=el('select',{});s.appendChild(el('option',{textContent:k,value:''}));API[k].split(' ').forEach(function(n){s.appendChild(el('option',{textContent:n,value:n}))});s.onchange=function(){if(s.value)put(s.value+(k==='Konstanta'||/^(Bid|Ask|Point|Digits)$/.test(s.value)?'':'('))};g.appendChild(s)});
+  var sp=el('select',{});sp.appendChild(el('option',{textContent:'Potongan kode',value:''}));Object.keys(SN).forEach(function(k){sp.appendChild(el('option',{textContent:k,value:k}))});sp.onchange=function(){if(sp.value)put(SN[sp.value])};g.appendChild(sp);
+  m.appendChild(g)})}
+
+/* ---------- impor / ekspor ---------- */
+async function shareText(fn,text){var P=window.Capacitor&&window.Capacitor.Plugins;
+  if(P&&P.Filesystem&&P.Share){try{var r=await P.Filesystem.writeFile({path:fn,data:text,directory:'CACHE',encoding:'utf8'});await P.Share.share({title:fn,url:r.uri,dialogTitle:'Simpan atau kirim '+fn});return}catch(e){say('Gagal membagikan: '+(e.message||e),'var(--er)')}}
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'}));a.download=fn;document.body.appendChild(a);a.click();a.remove();say('Diunduh: '+fn,'var(--ok)')}
+function ieUI(){modal('Impor / Ekspor fungsi',function(m){m.appendChild(el('div',{className:'bt'},[btn('Ekspor...',exportUI),btn('Impor...',function(){close();$('#file').click()})]))})}
+function exportUI(){var code=cm.getValue(),rows=[];
+  fns().forEach(function(f){rows.push({n:f.name,t:code.slice(f.start,f.end),s:'EA'})});
+  Object.keys(S.lib).forEach(function(k){rows.push({n:k,t:S.lib[k],s:'pustaka'})});
+  modal('Ekspor fungsi',function(m){
+    if(!rows.length)m.appendChild(el('div',{className:'mu',textContent:'Belum ada fungsi.'}));
+    rows.forEach(function(r){r.c=el('input',{type:'checkbox'});m.appendChild(el('label',{className:'r'},[r.c,el('span',{textContent:r.n+' ('+r.s+')'})]))});
+    m.appendChild(el('div',{className:'bt'},[btn('Batal',close),btn('Simpan .mqh',function(){var sel=rows.filter(function(r){return r.c.checked});if(!sel.length){say('Pilih minimal satu fungsi.','var(--er)');return}close();shareText((S.name||'EA').replace(/[^\w-]/g,'_')+'_fungsi.mqh','// Fungsi dari JefzExpert\n\n'+sel.map(function(r){return r.t}).join('\n\n')+'\n')},'ok')]))})}
+function place(txt,pl){var code=cm.getValue(),F=fns(code),a=pl.split(':'),k=a[0],f=F.filter(function(x){return x.name===a[1]})[0];
+  if(k==='rep'&&f)return cm.replaceRange(txt,cm.posFromIndex(f.start),cm.posFromIndex(f.end));
+  if(k==='before'&&f)return cm.replaceRange(txt+'\n\n',cm.posFromIndex(f.start));
+  if(k==='after'&&f)return cm.replaceRange('\n\n'+txt,cm.posFromIndex(f.end));
+  if(k==='start'&&F.length)return cm.replaceRange(txt+'\n\n',cm.posFromIndex(F[0].start));
+  cm.replaceRange('\n\n'+txt+'\n',cm.posFromIndex(code.length))}
+function importUI(text,list){var EF=fns();modal('Impor fungsi',function(m){
+  m.appendChild(el('div',{className:'mu',textContent:'Pilih fungsi dan tempatnya di editor:'}));
+  var rows=list.map(function(f){var s=el('select',{});function o(v,t){s.appendChild(el('option',{value:v,textContent:t}))}
+    o('end','Di akhir');o('start','Di awal');EF.forEach(function(e){o('before:'+e.name,'Sebelum '+e.name);o('after:'+e.name,'Sesudah '+e.name);o('rep:'+e.name,'Ganti '+e.name)});
+    s.value=EF.some(function(e){return e.name===f.name})?'rep:'+f.name:'end';
+    var c=el('input',{type:'checkbox',checked:true});m.appendChild(el('label',{className:'r'},[c,el('span',{textContent:f.name}),s]));return{f:f,c:c,s:s}});
+  m.appendChild(el('div',{className:'bt'},[btn('Batal',close),btn('Terapkan',async function(){
+    var sel=rows.filter(function(r){return r.c.checked});if(!sel.length)return;
+    var rep=sel.filter(function(r){return r.s.value.indexOf('rep:')===0}).map(function(r){return r.f.name});
+    if(rep.length&&!(await ask('Fungsi ini akan ditimpa: '+rep.join(', ')+'. Lanjut?'))){importUI(text,list);return}
+    sel.forEach(function(r){place(text.slice(r.f.start,r.f.end),r.s.value)});close();say('Diimpor: '+sel.length+' fungsi','var(--ok)')},'ok')]));
+  m.appendChild(el('div',{className:'bt'},[btn('Ganti seluruh editor dengan file ini',async function(){if(await ask('Seluruh isi editor akan tertimpa file ini. Lanjut?')){cm.setValue(text);close()}else importUI(text,list)})]))})}
+$('#file').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var t=String(r.result),l=fns(t);if(!l.length){modal('Impor',function(m){m.appendChild(el('p',{textContent:'Tidak ada fungsi ditemukan di file ini.'}));m.appendChild(btn('Tutup',close))});return}importUI(t,l)};r.readAsText(f);e.target.value=''});
+
+/* ---------- tombol ---------- */
+$('#bPre').addEventListener('click',presetUI);$('#bFn').addEventListener('click',fnUI);$('#bIE').addEventListener('click',ieUI);
+$('#bSave').addEventListener('click',function(){shareText(fname(),cm.getValue())});
+$('#bCopy').addEventListener('click',function(){var t=cm.getValue();if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){say('Kode disalin.','var(--ok)')},function(){say('Gagal menyalin.','var(--er)')});else say('Salin tidak didukung.','var(--er)')});
+$('#bChk').addEventListener('click',function(){var r=lint(cm.getValue());modal('Hasil cek',function(m){if(!r.length)m.appendChild(el('p',{textContent:'Kurung, kutip, dan OnTick() beres. Kompilasi penuh tetap di MetaEditor (F7).'}));r.forEach(function(x){m.appendChild(el('div',{className:'r',textContent:x}))});m.appendChild(btn('Tutup',close))})});
+
+/* ---------- dropdown otomatis ---------- */
+cm.on('inputRead',function(c,ch){if(!/\w/.test(ch.text[0]||''))return;
+  c.showHint({completeSingle:false,hint:function(c){var cur=c.getCursor(),tk=c.getTokenAt(cur),w=tk.string;if(!/^\w{2,}$/.test(w))return;
+    var all=ALL.split(' ').concat(fns().map(function(f){return f.name}));
+    var l=all.filter(function(n){return n!==w&&n.toLowerCase().indexOf(w.toLowerCase())===0});
+    return l.length?{list:l,from:CodeMirror.Pos(cur.line,tk.start),to:CodeMirror.Pos(cur.line,tk.end)}:undefined}})});
+
 })();
 </script>
 </body>
