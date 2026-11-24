@@ -38,6 +38,7 @@ li.CodeMirror-hint-active{background:var(--ln);color:var(--tx)}
 .r input[type=checkbox]{min-height:0;width:22px;height:22px}
 .mu{color:var(--mu);font-size:13px}.ok{background:var(--ok);border-color:var(--ok);font-weight:700}
 .bt{display:flex;gap:8px;margin-top:10px}.bt>*{flex:1}
+#wrap>#ed{position:absolute;inset:0;width:100%;height:100%;resize:none;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);background:#0f151e;border:0;padding:10px;white-space:pre;overflow:auto;tab-size:3}
 </style>
 </head>
 <body>
@@ -305,6 +306,7 @@ function lint(c){
   if(/\b(CTrade|PositionSelect|PositionGetDouble|MqlTradeRequest)\b/.test(c))o.push('Terdeteksi sintaks MQL5. MT4 butuh MQL4.');
   return o}
 
+
 /* ---------- mode MQL4 + kamus ---------- */
 var API={Order:'OrderSend OrderModify OrderClose OrderDelete OrderSelect OrdersTotal OrderType OrderTicket OrderLots OrderOpenPrice OrderStopLoss OrderTakeProfit OrderProfit OrderSwap OrderCommission OrderMagicNumber OrderSymbol OrderOpenTime OrderComment',
 Akun:'AccountBalance AccountEquity AccountFreeMargin',
@@ -314,10 +316,22 @@ Util:'Print Alert Comment GetLastError TimeCurrent DoubleToString IntegerToStrin
 Konstanta:'OP_BUY OP_SELL OP_BUYSTOP OP_SELLSTOP OP_BUYLIMIT OP_SELLLIMIT SELECT_BY_POS SELECT_BY_TICKET MODE_TRADES MODE_POINT MODE_STOPLEVEL MODE_LOTSTEP MODE_MINLOT MODE_MAXLOT MODE_TICKVALUE MODE_TICKSIZE clrBlue clrRed clrNONE INIT_SUCCEEDED'};
 var ALL=Object.keys(API).map(function(k){return API[k]}).join(' ');
 function W(s){var o={};s.split(' ').forEach(function(w){o[w]=true});return o}
-CodeMirror.defineMIME('text/x-mql4',{name:'clike',keywords:W('extern input static const if else for while do switch case default break continue return true false'),types:W('int double bool string datetime color void long uint char short'),builtin:W(ALL),atoms:W('NULL'),hooks:{'#':function(s){s.skipToEnd();return 'meta'}}});
+if(window.CodeMirror)CodeMirror.defineMIME('text/x-mql4',{name:'clike',keywords:W('extern input static const if else for while do switch case default break continue return true false'),types:W('int double bool string datetime color void long uint char short'),builtin:W(ALL),atoms:W('NULL'),hooks:{'#':function(s){s.skipToEnd();return 'meta'}}});
 function defaultEA(){return ea({name:'JefzGrid',magic:20261124,lot:0.01,mul:2,lv:6,maxlot:1,grid:200,entry:150,trail:50,tp:5,eq:30,spr:30})}
 
-var cm=CodeMirror.fromTextArea($('#ed'),{mode:'text/x-mql4',lineNumbers:true,indentUnit:3,tabSize:3});
+var cm;
+if(window.CodeMirror){cm=CodeMirror.fromTextArea($('#ed'),{mode:'text/x-mql4',lineNumbers:true,indentUnit:3,tabSize:3})}
+else{
+  var ta=$('#ed'),fire=function(){ta.dispatchEvent(new Event('input'))};
+  cm={getValue:function(){return ta.value},setValue:function(v){ta.value=v;fire()},
+    replaceSelection:function(t){ta.setRangeText(t,ta.selectionStart,ta.selectionEnd,'end');fire()},
+    replaceRange:function(t,a,b){ta.setRangeText(t,a.i,(b||a).i,'end');fire()},
+    posFromIndex:function(i){return{i:i}},
+    setCursor:function(p){ta.focus();ta.setSelectionRange(p.i,p.i);ta.scrollTop=Math.max(0,(ta.value.slice(0,p.i).split('\n').length-1)*19-60)},
+    focus:function(){ta.focus()},lineCount:function(){return ta.value.split('\n').length},
+    on:function(e,f){if(e==='change')ta.addEventListener('input',f)}};
+  say('Mode sederhana tanpa warna: folder cm/ tidak ditemukan.','var(--am)');
+}
 cm.setValue(S.code||SN['Kerangka EA kosong']);$('#nm').value=S.name;
 function info(){$('#inf').textContent=cm.lineCount()+' baris'}
 cm.on('change',function(){S.code=cm.getValue();persist();info()});info();
@@ -352,12 +366,20 @@ function nameBox(title,val){return new Promise(function(res){modal(title,functio
 function put(t){close();cm.replaceSelection(t);cm.focus()}
 
 /* ---------- preset ---------- */
+var BI=[{n:'Kerangka EA kosong',t:'ea',c:SN['Kerangka EA kosong']},{n:'Grid + Marti + Trailing (EA lengkap)',t:'ea',c:defaultEA()}];
+(function(){var d=defaultEA();fns(d).forEach(function(f){if(f.name!=='OnInit'&&f.name!=='OnTick')BI.push({n:f.name+'()',t:'fn',c:d.slice(f.start,f.end)})});
+  Object.keys(SN).forEach(function(k){if(k!=='Kerangka EA kosong')BI.push({n:k,t:'fn',c:SN[k]})})})();
 function presetUI(){modal('Preset kode',function(m){
   m.appendChild(btn('Simpan kode sekarang sebagai preset',async function(){var n=await nameBox('Nama preset',S.name);if(!n){presetUI();return}if(S.presets[n]&&!(await ask('Preset "'+n+'" sudah ada. Timpa?'))){presetUI();return}S.presets[n]=cm.getValue();persist();say('Preset disimpan: '+n,'var(--ok)');presetUI()}));
-  [['Grid + Marti + Trailing (bawaan)',null]].concat(Object.keys(S.presets).map(function(k){return [k,k]})).forEach(function(it){
-    var r=el('div',{className:'r'},[el('span',{textContent:it[0]}),btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+it[0]+'"? Kode sekarang tertimpa.'))){presetUI();return}cm.setValue(it[1]?S.presets[it[1]]:defaultEA());close()})]);
-    if(it[1])r.appendChild(btn('Hapus',async function(){if(await ask('Hapus preset "'+it[1]+'"?','Ya, hapus')){delete S.presets[it[1]];persist()}presetUI()}));
-    m.appendChild(r)})})}
+  m.appendChild(el('h3',{textContent:'Bawaan',style:'margin-top:12px'}));
+  BI.forEach(function(b){m.appendChild(el('div',{className:'r'},[el('span',{textContent:b.n}),
+    b.t==='ea'?btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+b.n+'"? Kode sekarang tertimpa.'))){presetUI();return}cm.setValue(b.c);close()})
+             :btn('Sisipkan',function(){put('\n'+b.c+'\n')})]))});
+  m.appendChild(el('h3',{textContent:'Preset saya',style:'margin-top:12px'}));
+  var ks=Object.keys(S.presets);if(!ks.length)m.appendChild(el('div',{className:'mu',textContent:'Belum ada.'}));
+  ks.forEach(function(k){m.appendChild(el('div',{className:'r'},[el('span',{textContent:k}),
+    btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+k+'"? Kode sekarang tertimpa.'))){presetUI();return}cm.setValue(S.presets[k]);close()}),
+    btn('Hapus',async function(){if(await ask('Hapus preset "'+k+'"?','Ya, hapus')){delete S.presets[k];persist()}presetUI()})]))})})}
 
 /* ---------- fungsi ---------- */
 function fnUI(){var F=fns();modal('Fungsi',function(m){
