@@ -26,13 +26,13 @@ jobs:
       - name: Siapkan proyek Android (Capacitor)
         run: |
           npm init -y
-          npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/filesystem@6 @capacitor/share@6
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.jefz.expert",
             "appName": "JefzExpert",
             "webDir": "www",
-            "plugins": { "CapacitorHttp": { "enabled": true } }
+            "android": { "allowMixedContent": false }
           }
           EOF
           npx cap add android
@@ -51,4 +51,4 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk JefzExpert.apk
           gh release create "build-${{ github.run_number }}" JefzExpert.apk \
             --title "JefzExpert build ${{ github.run_number }}" \
-            --notes "Tahap 1: login akun, harga live, Buy/Sell manual, posisi."
+            --notes "Tahap 1: editor MQL4, template, generator Grid+Marti+trailing, ekspor .mq4."
