@@ -6,402 +6,365 @@
 <meta name="color-scheme" content="dark">
 <title>JefzExpert</title>
 <style>
-:root{--bg:#131a24;--panel:#1b2431;--line:#2a3646;--text:#e7ecf3;--mut:#8a97a9;--buy:#2fa57a;--sell:#d9475f;--amb:#e3a73c;--r:10px}
+:root{--bg:#131a24;--pn:#1b2431;--ln:#2a3646;--tx:#e7ecf3;--mu:#8a97a9;--ok:#2fa57a;--er:#d9475f;--am:#e3a73c}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
-h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.top .l{display:flex;align-items:center;gap:8px}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--mut)}
-.dot.ok{background:var(--buy)}.dot.err{background:var(--sell)}.dot.wait{background:var(--amb)}
-.badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid var(--line);color:var(--mut)}
-.badge.demo{color:var(--amb);border-color:var(--amb)}
-.badge.real{color:#fff;background:var(--sell);border-color:var(--sell)}
-button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;min-height:44px}
-button:disabled{opacity:.4}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:10px}
-.acc{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;color:var(--mut)}
-.acc b{display:block;color:var(--text);font-size:16px;font-variant-numeric:tabular-nums}
-.px{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center}
-.px .v{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
-.px .k{font-size:12px;color:var(--mut)}
-.px .up{color:var(--buy)}.px .dn{color:var(--sell)}
-.sym{display:flex;justify-content:space-between;color:var(--mut);font-size:13px;margin-bottom:6px}
-.sym b{color:var(--text)}
-.f{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
-input,select{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px}
-.go{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-.go button{font-weight:700;font-size:18px;min-height:56px;color:#fff;border:0}
-.buy{background:var(--buy)}.sell{background:var(--sell)}
-.pos{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
-.pos:first-of-type{border-top:0}
-.pos .t{font-weight:700}.pos .t.b{color:var(--buy)}.pos .t.s{color:var(--sell)}
-.pos .pl{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
-.pos .pl.p{color:var(--buy)}.pos .pl.n{color:var(--sell)}
-.pos button{min-height:36px;padding:4px 10px;font-size:13px}
-.mut{color:var(--mut)}
-h2{font-size:14px;margin:0 0 6px}
-#log{font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--mut);max-height:150px;overflow:auto;white-space:pre-wrap}
-#log .e{color:var(--sell)}#log .g{color:var(--buy)}
-.row{display:flex;gap:8px;margin-top:10px}.row>*{flex:1}
-details{margin-top:8px;font-size:13px;color:var(--mut)}
-details ol{padding-left:18px;margin:6px 0}
-dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:16px;max-width:88vw;width:360px}
-dialog::backdrop{background:rgba(0,0,0,.6)}
-dialog.real{border-color:var(--sell)}
-.hide{display:none}
-@media (prefers-reduced-motion:no-preference){.px .v{transition:color .25s}}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+header{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--ln)}
+header b{font-size:17px}
+main{flex:1;min-height:0;overflow:auto;padding:10px}
+section{display:none;height:100%}section.on{display:flex;flex-direction:column;gap:8px}
+button,select,input{font:inherit;color:var(--tx);background:var(--pn);border:1px solid var(--ln);border-radius:9px;min-height:42px;padding:6px 10px}
+button:active{background:var(--ln)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--am)}
+.bar{display:flex;gap:6px;flex-wrap:wrap}
+.bar>*{flex:1 1 auto}
+#ed{flex:1;min-height:200px;width:100%;resize:none;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);background:#0f151e;border:1px solid var(--ln);border-radius:9px;padding:10px;white-space:pre;overflow:auto;tab-size:3}
+#info{font-size:12px;color:var(--mu)}
+#out{font-size:13px;max-height:110px;overflow:auto}
+#out div{padding:2px 0}.e{color:var(--er)}.g{color:var(--ok)}.w{color:var(--am)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
+.grid input{width:100%}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:12px}
+nav{display:flex;border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;border-radius:0;background:none;min-height:50px;color:var(--mu)}
+nav button.on{color:var(--tx);box-shadow:inset 0 2px 0 var(--am)}
+.mu{color:var(--mu);font-size:13px}
 </style>
 </head>
 <body>
-
-<div class="top">
-  <div class="l"><span id="dot" class="dot"></span><h1>JefzExpert</h1><span id="badge" class="badge hide"></span></div>
-  <button id="btnSet">Pengaturan</button>
-</div>
-
-<!-- Pengaturan koneksi -->
-<section id="setup" class="card hide">
-  <h2>Hubungkan akun</h2>
-  <label for="token">API token MetaApi</label>
-  <input id="token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <div style="height:8px"></div>
-  <label for="accId">ID akun MetaApi</label>
-  <input id="accId" autocomplete="off" autocapitalize="off" spellcheck="false">
-  <div style="height:8px"></div>
-  <div class="f" style="grid-template-columns:1fr 1fr">
-    <div><label for="region">Region</label>
-      <select id="region"><option>new-york</option><option>london</option><option>singapore</option></select></div>
-    <div><label for="maxLot">Batas lot per order</label>
-      <input id="maxLot" type="number" inputmode="decimal" step="0.01" min="0.01"></div>
+<header><b>JefzExpert</b><span class="mu">Pembuat EA MQL4</span></header>
+<main>
+<section id="t-ed" class="on">
+  <div class="bar">
+    <input id="nm" aria-label="Nama file" style="flex:2 1 120px" placeholder="NamaEA">
+    <select id="snip" aria-label="Sisipkan potongan kode"><option value="">Sisipkan kode...</option></select>
   </div>
-  <div style="height:8px"></div>
-  <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--text)">
-    <input id="confirm" type="checkbox" style="width:22px;min-height:22px"> Minta konfirmasi sebelum kirim order
-  </label>
-  <div class="row">
-    <button id="btnClear">Hapus data</button>
-    <button id="btnSave" class="buy" style="border:0;color:#fff;font-weight:700">Simpan dan hubungkan</button>
+  <textarea id="ed" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor MQL4"></textarea>
+  <div id="info"></div>
+  <div class="bar">
+    <button id="bNew">Baru</button>
+    <label class="bar" style="margin:0"><button type="button" id="bOpen" style="flex:1">Buka</button></label>
+    <button id="bChk">Cek</button>
+    <button id="bCopy">Salin</button>
+    <button id="bSave" style="background:var(--ok);border-color:var(--ok);font-weight:700">Simpan .mq4</button>
   </div>
-  <details>
-    <summary>Cara mendapat token dan ID akun</summary>
-    <ol>
-      <li>Buka app.metaapi.cloud di browser HP dan daftar.</li>
-      <li>Tambah akun MetaTrader: isi nomor akun Exness, password, dan nama server (contoh: Exness-MT5Trial). Tipe MT4 atau MT5 sesuai akunmu.</li>
-      <li>Tunggu status akun menjadi DEPLOYED, lalu salin ID akunnya.</li>
-      <li>Buka halaman Token di MetaApi, buat API token, salin ke sini.</li>
-    </ol>
-    Password akun Exness hanya diisi di MetaApi, tidak masuk ke app ini. Coba dulu dengan akun demo.
-  </details>
+  <input id="file" type="file" accept=".mq4,.mqh,.txt" hidden>
+  <div id="out"></div>
 </section>
 
-<!-- Info akun -->
-<section id="accCard" class="card hide">
-  <div class="acc">
-    <div>Saldo<b id="aBal">-</b></div>
-    <div>Ekuitas<b id="aEq">-</b></div>
-    <div>Akun<b id="aLogin">-</b></div>
-    <div>Server<b id="aSrv">-</b></div>
-  </div>
+<section id="t-gen">
+  <div class="card mu">Isi parameter, lalu buat kode. Hasilnya masuk ke Editor dan bisa kamu ubah. Satuan jarak dalam poin (Point).</div>
+  <div class="grid" id="gf"></div>
+  <button id="bGen" style="background:var(--ok);border-color:var(--ok);font-weight:700">Buat kode Grid + Marti + Trailing</button>
 </section>
 
-<!-- Harga dan order -->
-<section id="trade" class="card hide">
-  <div class="sym"><span>Simbol <b id="symShow"></b></span><span id="spread">spread -</span></div>
-  <div class="px">
-    <div><div class="k">Bid (jual)</div><div id="bid" class="v">-</div></div>
-    <div><div class="k">Ask (beli)</div><div id="ask" class="v">-</div></div>
-  </div>
-  <div style="height:12px"></div>
-  <div class="f">
-    <div><label for="sym">Simbol</label><input id="sym" list="symList" autocapitalize="characters" autocomplete="off" spellcheck="false"></div>
-    <div><label for="lot">Lot</label><input id="lot" type="number" inputmode="decimal" step="0.01" min="0.01" value="0.01"></div>
-    <div><label for="sl">SL (harga)</label><input id="sl" type="number" inputmode="decimal" step="any" placeholder="kosong"></div>
-  </div>
-  <div class="f" style="margin-top:8px">
-    <div><label for="tp">TP (harga)</label><input id="tp" type="number" inputmode="decimal" step="any" placeholder="kosong"></div>
-  </div>
-  <datalist id="symList"></datalist>
-  <div class="go">
-    <button id="btnBuy" class="buy" disabled>Buy</button>
-    <button id="btnSell" class="sell" disabled>Sell</button>
+<section id="t-test">
+  <div class="card"><b>Strategy Tester</b>
+    <p class="mu">Dibangun di tahap 3: impor CSV, pilihan mode tick (tick asli, dibangkitkan dari M1, 1 menit OHLC, Open prices only), pembacaan per rentang tanggal, dan laporan ala MT5.</p>
   </div>
 </section>
-
-<!-- Posisi -->
-<section id="posCard" class="card hide">
-  <h2>Posisi terbuka</h2>
-  <div id="pos" class="mut">Belum ada posisi.</div>
-</section>
-
-<!-- Log -->
-<section id="logCard" class="card hide">
-  <h2>Log</h2>
-  <div id="log"></div>
-</section>
-
-<dialog id="dlg">
-  <p id="dlgText" style="margin-top:0"></p>
-  <div class="row">
-    <button id="dlgNo">Batal</button>
-    <button id="dlgYes" style="font-weight:700">Kirim</button>
-  </div>
-</dialog>
+</main>
+<nav>
+  <button class="on" data-t="t-ed">Editor</button>
+  <button data-t="t-gen">Generator</button>
+  <button data-t="t-test">Tester</button>
+</nav>
 
 <script>
-(function () {
-  'use strict';
-  var $ = function (id) { return document.getElementById(id); };
-  var KEY = 'jefzexpert.cfg';
-  var cfg = { token: '', accountId: '', region: 'new-york', symbol: 'EURUSD', maxLot: 0.1, confirm: true };
-  try { Object.assign(cfg, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var K='jefzexpert.v2',ed=$('#ed'),nm=$('#nm'),out=$('#out');
+var st={name:'JefzGrid',code:''};
+try{Object.assign(st,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){}
 
-  var connected = false, accInfo = null, lastErr = '', digits = 0, lastBid = null, priceOk = false;
+/* ---------- EA generator (MQL4) ---------- */
+function ea(p){return `//+------------------------------------------------------------------+
+//| ${p.name}.mq4 - dibuat JefzExpert
+//| Grid + Martingale + trailing order stop
+//+------------------------------------------------------------------+
+#property copyright "JefzExpert"
+#property strict
 
-  function saveCfg() { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {} }
+extern int    MagicNumber   = ${p.magic};
+extern double StartLot      = ${p.lot};     // lot awal
+extern double LotMultiplier = ${p.mul};     // pengali lot tiap level
+extern int    MaxLevels     = ${p.lv};      // maks posisi per keranjang
+extern double MaxLot        = ${p.maxlot};  // batas lot per order
+extern int    GridStep      = ${p.grid};    // jarak antar level (poin)
+extern int    EntryDistance = ${p.entry};   // jarak order stop dari harga (poin)
+extern int    TrailStep     = ${p.trail};   // geser order stop bila harga menjauh sejauh ini (poin)
+extern double BasketTP      = ${p.tp};      // target profit keranjang (mata uang akun)
+extern double EquityStopPct = ${p.eq};      // tutup semua bila ekuitas turun x% dari balance (0 = mati)
+extern int    MaxSpread     = ${p.spr};     // maks spread untuk pasang order (poin)
+extern int    Slippage      = 5;
 
-  /* ---------- log ---------- */
-  var logEl = $('log');
-  function log(msg, cls) {
-    var d = document.createElement('div');
-    if (cls) d.className = cls;
-    var t = new Date();
-    d.textContent = t.toLocaleTimeString('id-ID') + '  ' + msg;
-    logEl.appendChild(d);
-    while (logEl.childNodes.length > 60) logEl.removeChild(logEl.firstChild);
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-  function fail(e) {
-    var m = (e && e.message) ? e.message : String(e);
-    $('dot').className = 'dot err';
-    if (m !== lastErr) { lastErr = m; log(m, 'e'); }
-  }
+bool Halted = false;
 
-  /* ---------- API MetaApi ---------- */
-  function base() {
-    return 'https://mt-client-api-v1.' + cfg.region + '.agiliumtrade.ai/users/current/accounts/' + encodeURIComponent(cfg.accountId);
-  }
-  async function call(path, method, body) {
-    var res = await fetch(base() + path, {
-      method: method || 'GET',
-      headers: { 'auth-token': cfg.token, 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined
-    });
-    var txt = await res.text(), data = null;
-    try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
-    if (!res.ok) {
-      var m = (data && data.message) ? data.message : ('HTTP ' + res.status);
-      if (res.status === 401) m = 'Token ditolak. Periksa API token.';
-      else if (res.status === 404) m = 'Akun belum DEPLOYED/tersambung, ID salah, region salah, atau simbol tidak ada. (' + m + ')';
-      else if (res.status === 429) m = 'Terlalu banyak permintaan (429). Tunggu sebentar.';
-      throw new Error(m);
-    }
-    lastErr = '';
-    return data;
-  }
+int OnInit(){ return(INIT_SUCCEEDED); }
 
-  /* ---------- tampilan ---------- */
-  function show(id, on) { $(id).classList.toggle('hide', !on); }
-  function fmt(n) { return (typeof n === 'number') ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'; }
-  function decs(n) { var s = String(n), i = s.indexOf('.'); return i < 0 ? 0 : s.length - i - 1; }
-  function isReal() { return accInfo && String(accInfo.type).indexOf('REAL') >= 0; }
+double NormLot(double lot)
+{
+   double st = MarketInfo(Symbol(), MODE_LOTSTEP);
+   double mn = MarketInfo(Symbol(), MODE_MINLOT);
+   double mx = MarketInfo(Symbol(), MODE_MAXLOT);
+   if(st <= 0) st = 0.01;
+   lot = MathFloor(lot / st + 0.0000001) * st;
+   if(lot > MaxLot) lot = MaxLot;
+   if(lot > mx) lot = mx;
+   if(lot < mn) lot = mn;
+   return(NormalizeDouble(lot, 3));
+}
 
-  function setUI() {
-    show('setup', !connected);
-    show('accCard', connected); show('trade', connected); show('posCard', connected); show('logCard', true);
-    $('btnSet').textContent = connected ? 'Pengaturan' : 'Tutup';
-    $('btnSet').classList.toggle('hide', !connected && !cfg.token);
-  }
-  function fillSetup() {
-    $('token').value = cfg.token; $('accId').value = cfg.accountId; $('region').value = cfg.region;
-    $('maxLot').value = cfg.maxLot; $('confirm').checked = !!cfg.confirm;
-  }
-  function updateButtons() {
-    var ok = connected && priceOk && !!accInfo;
-    $('btnBuy').disabled = !ok; $('btnSell').disabled = !ok;
-  }
+double EntryDist()
+{
+   double d = EntryDistance * Point;
+   double m = (MarketInfo(Symbol(), MODE_STOPLEVEL) + 2) * Point;
+   if(d < m) d = m;
+   return(d);
+}
 
-  /* ---------- polling ---------- */
-  async function pollAccount() {
-    var a = await call('/account-information');
-    accInfo = a;
-    var cur = a.currency || '';
-    $('aBal').textContent = fmt(a.balance) + ' ' + cur;
-    $('aEq').textContent = fmt(a.equity) + ' ' + cur;
-    $('aLogin').textContent = String(a.login || '-');
-    $('aSrv').textContent = a.server || '-';
-    var b = $('badge'); b.classList.remove('hide', 'demo', 'real');
-    if (String(a.type).indexOf('DEMO') >= 0) { b.textContent = 'DEMO'; b.classList.add('demo'); }
-    else if (String(a.type).indexOf('REAL') >= 0) { b.textContent = 'REAL'; b.classList.add('real'); }
-    else { b.textContent = 'KONTES'; }
-    $('dot').className = 'dot ok';
-    updateButtons();
-  }
+void Scan(int &mkt, int &pend, int &dir, double &lastLot, double &lastPrice, double &profit)
+{
+   mkt = 0; pend = 0; dir = -1; lastLot = 0; lastPrice = 0; profit = 0;
+   datetime lastTime = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber) continue;
+      int t = OrderType();
+      if(t == OP_BUY || t == OP_SELL)
+      {
+         mkt++;
+         dir = t;
+         profit += OrderProfit() + OrderSwap() + OrderCommission();
+         if(OrderOpenTime() >= lastTime)
+         {
+            lastTime = OrderOpenTime();
+            lastLot = OrderLots();
+            lastPrice = OrderOpenPrice();
+         }
+      }
+      else pend++;
+   }
+}
 
-  async function pollPrice() {
-    var s = cfg.symbol;
-    var p = await call('/symbols/' + encodeURIComponent(s) + '/current-price?keepSubscription=true');
-    if (s !== cfg.symbol) return;
-    digits = Math.max(digits, decs(p.bid), decs(p.ask));
-    var bidEl = $('bid'), askEl = $('ask');
-    bidEl.textContent = p.bid.toFixed(digits); askEl.textContent = p.ask.toFixed(digits);
-    var cls = (lastBid === null || p.bid === lastBid) ? '' : (p.bid > lastBid ? 'up' : 'dn');
-    bidEl.className = 'v ' + cls; askEl.className = 'v ' + cls;
-    lastBid = p.bid;
-    $('spread').textContent = 'spread ' + (p.ask - p.bid).toFixed(digits);
-    priceOk = true; $('dot').className = 'dot ok';
-    updateButtons();
-  }
+void CloseAll()
+{
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber) continue;
+      int t = OrderType();
+      RefreshRates();
+      if(t == OP_BUY)
+      {
+         if(!OrderClose(OrderTicket(), OrderLots(), Bid, Slippage, clrNONE)) Print("Close gagal: ", GetLastError());
+      }
+      else if(t == OP_SELL)
+      {
+         if(!OrderClose(OrderTicket(), OrderLots(), Ask, Slippage, clrNONE)) Print("Close gagal: ", GetLastError());
+      }
+      else if(!OrderDelete(OrderTicket())) Print("Delete gagal: ", GetLastError());
+   }
+}
 
-  async function pollPositions() {
-    var list = await call('/positions');
-    var box = $('pos');
-    box.textContent = '';
-    if (!list || !list.length) { box.className = 'mut'; box.textContent = 'Belum ada posisi.'; return; }
-    box.className = '';
-    list.forEach(function (p) {
-      var buy = String(p.type).indexOf('BUY') >= 0;
-      var row = document.createElement('div'); row.className = 'pos';
-      var l = document.createElement('div');
-      var t = document.createElement('span'); t.className = 't ' + (buy ? 'b' : 's'); t.textContent = buy ? 'Buy' : 'Sell';
-      l.appendChild(t);
-      l.appendChild(document.createTextNode(' ' + p.volume + ' ' + p.symbol + ' @ ' + p.openPrice));
-      var pl = document.createElement('div');
-      var prof = (typeof p.profit === 'number') ? p.profit : 0;
-      pl.className = 'pl ' + (prof >= 0 ? 'p' : 'n'); pl.textContent = fmt(prof);
-      var sub = document.createElement('div'); sub.className = 'mut';
-      sub.textContent = 'SL ' + (p.stopLoss || '-') + '  TP ' + (p.takeProfit || '-');
-      var btn = document.createElement('button'); btn.textContent = 'Tutup';
-      btn.addEventListener('click', function () { closePosition(p); });
-      row.appendChild(l); row.appendChild(pl); row.appendChild(sub); row.appendChild(btn);
-      box.appendChild(row);
-    });
-  }
+void DeletePendings()
+{
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber) continue;
+      int t = OrderType();
+      if(t == OP_BUYSTOP || t == OP_SELLSTOP || t == OP_BUYLIMIT || t == OP_SELLLIMIT)
+         if(!OrderDelete(OrderTicket())) Print("Delete gagal: ", GetLastError());
+   }
+}
 
-  function loop(fn, ms) {
-    var busy = false;
-    setInterval(async function () {
-      if (busy || document.hidden || !connected) return;
-      busy = true;
-      try { await fn(); } catch (e) { fail(e); } finally { busy = false; }
-    }, ms);
-  }
-  loop(pollPrice, 1000);
-  loop(pollPositions, 3000);
-  loop(pollAccount, 6000);
+void OpenMarket(int type, double lot)
+{
+   RefreshRates();
+   double price = (type == OP_BUY) ? Ask : Bid;
+   int tk = OrderSend(Symbol(), type, lot, price, Slippage, 0, 0, "JefzExpert", MagicNumber, 0, (type == OP_BUY) ? clrBlue : clrRed);
+   if(tk < 0) Print("OrderSend gagal: ", GetLastError());
+}
 
-  /* ---------- konfirmasi ---------- */
-  var dlg = $('dlg');
-  function ask(text, real) {
-    return new Promise(function (resolve) {
-      $('dlgText').textContent = text;
-      dlg.classList.toggle('real', !!real);
-      function done(v) { $('dlgYes').onclick = null; $('dlgNo').onclick = null; dlg.close(); resolve(v); }
-      $('dlgYes').onclick = function () { done(true); };
-      $('dlgNo').onclick = function () { done(false); };
-      dlg.oncancel = function () { resolve(false); };
-      dlg.showModal();
-    });
-  }
+void PlacePendings()
+{
+   double d = EntryDist();
+   double lot = NormLot(StartLot);
+   if(OrderSend(Symbol(), OP_BUYSTOP, lot, NormalizeDouble(Ask + d, Digits), Slippage, 0, 0, "JefzExpert", MagicNumber, 0, clrBlue) < 0)
+      Print("BuyStop gagal: ", GetLastError());
+   if(OrderSend(Symbol(), OP_SELLSTOP, lot, NormalizeDouble(Bid - d, Digits), Slippage, 0, 0, "JefzExpert", MagicNumber, 0, clrRed) < 0)
+      Print("SellStop gagal: ", GetLastError());
+}
 
-  /* ---------- order ---------- */
-  var OK = { TRADE_RETCODE_DONE: 1, TRADE_RETCODE_PLACED: 1, TRADE_RETCODE_DONE_PARTIAL: 1, ERR_NO_ERROR: 1 };
-  async function sendTrade(body, label) {
-    var r = await call('/trade', 'POST', body);
-    if (r && OK[r.stringCode]) log(label + ' berhasil. ' + (r.positionId ? 'Posisi ' + r.positionId : (r.orderId ? 'Order ' + r.orderId : '')), 'g');
-    else log(label + ' ditolak: ' + ((r && (r.message || r.stringCode)) || 'tidak ada jawaban'), 'e');
-    pollPositions().catch(fail); pollAccount().catch(fail);
-  }
+void TrailPendings()
+{
+   double d = EntryDist();
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber) continue;
+      int t = OrderType();
+      if(t == OP_BUYSTOP)
+      {
+         double nb = NormalizeDouble(Ask + d, Digits);
+         if(OrderOpenPrice() - nb >= TrailStep * Point)
+            if(!OrderModify(OrderTicket(), nb, 0, 0, 0, clrBlue)) Print("Modify gagal: ", GetLastError());
+      }
+      else if(t == OP_SELLSTOP)
+      {
+         double ns = NormalizeDouble(Bid - d, Digits);
+         if(ns - OrderOpenPrice() >= TrailStep * Point)
+            if(!OrderModify(OrderTicket(), ns, 0, 0, 0, clrRed)) Print("Modify gagal: ", GetLastError());
+      }
+   }
+}
 
-  async function placeOrder(side) {
-    if (!accInfo) { log('Info akun belum termuat. Order dibatalkan.', 'e'); return; }
-    var vol = parseFloat($('lot').value);
-    if (!(vol > 0)) { log('Lot tidak valid.', 'e'); return; }
-    if (vol > cfg.maxLot + 1e-9) { log('Lot ' + vol + ' melebihi batas ' + cfg.maxLot + '. Ubah batas di Pengaturan.', 'e'); return; }
-    var sym = cfg.symbol;
-    var sl = parseFloat($('sl').value), tp = parseFloat($('tp').value);
-    var body = { actionType: side === 'buy' ? 'ORDER_TYPE_BUY' : 'ORDER_TYPE_SELL', symbol: sym, volume: vol, comment: 'JefzExpert' };
-    if (sl > 0) body.stopLoss = sl;
-    if (tp > 0) body.takeProfit = tp;
-    var real = isReal();
-    if (real || cfg.confirm) {
-      var txt = (side === 'buy' ? 'Buy ' : 'Sell ') + vol + ' lot ' + sym + ' di akun ' + (real ? 'REAL' : 'DEMO') + ' #' + accInfo.login + '?';
-      if (!(await ask(txt, real))) { log('Order dibatalkan.'); return; }
-    }
-    $('btnBuy').disabled = true; $('btnSell').disabled = true;
-    try { await sendTrade(body, (side === 'buy' ? 'Buy ' : 'Sell ') + vol + ' ' + sym); }
-    catch (e) { fail(e); }
-    finally { updateButtons(); }
-  }
+void OnTick()
+{
+   if(Halted) return;
+   if(EquityStopPct > 0 && AccountEquity() < AccountBalance() * (1.0 - EquityStopPct / 100.0))
+   {
+      CloseAll();
+      Halted = true;
+      Alert(WindowExpertName(), ": stop ekuitas tercapai, EA berhenti.");
+      return;
+   }
+   int mkt = 0, pend = 0, dir = -1;
+   double lastLot = 0, lastPrice = 0, profit = 0;
+   Scan(mkt, pend, dir, lastLot, lastPrice, profit);
+   if(mkt == 0)
+   {
+      if(pend == 0) { if((Ask - Bid) / Point <= MaxSpread) PlacePendings(); }
+      else TrailPendings();
+      return;
+   }
+   if(pend > 0) DeletePendings();
+   if(profit >= BasketTP) { CloseAll(); return; }
+   if(mkt >= MaxLevels) return;
+   double lot = NormLot(lastLot * LotMultiplier);
+   double step = GridStep * Point;
+   if(dir == OP_BUY && Ask <= lastPrice - step) OpenMarket(OP_BUY, lot);
+   if(dir == OP_SELL && Bid >= lastPrice + step) OpenMarket(OP_SELL, lot);
+}
+`}
 
-  async function closePosition(p) {
-    if (cfg.confirm || isReal()) {
-      if (!(await ask('Tutup posisi ' + p.symbol + ' ' + p.volume + ' lot (ID ' + p.id + ')?', isReal()))) return;
-    }
-    try { await sendTrade({ actionType: 'POSITION_CLOSE_ID', positionId: String(p.id) }, 'Tutup posisi ' + p.id); }
-    catch (e) { fail(e); }
-  }
+/* ---------- potongan kode ---------- */
+var SN={
+'Kerangka EA kosong':`#property strict
 
-  /* ---------- simbol ---------- */
-  async function loadSymbols() {
-    try {
-      var list = await call('/symbols');
-      var dl = $('symList'); dl.textContent = '';
-      (list || []).forEach(function (s) { var o = document.createElement('option'); o.value = s; dl.appendChild(o); });
-      log('Simbol tersedia: ' + (list ? list.length : 0));
-    } catch (e) { fail(e); }
-  }
-  function setSymbol(s) {
-    s = (s || '').trim();
-    if (!s || s === cfg.symbol) return;
-    cfg.symbol = s; saveCfg();
-    digits = 0; lastBid = null; priceOk = false; updateButtons();
-    $('symShow').textContent = s; $('bid').textContent = '-'; $('ask').textContent = '-';
-    log('Simbol: ' + s);
-  }
+int OnInit(){ return(INIT_SUCCEEDED); }
+void OnDeinit(const int reason){}
+void OnTick()
+{
 
-  /* ---------- koneksi ---------- */
-  async function connect() {
-    connected = true; priceOk = false; accInfo = null; lastErr = ''; updateButtons();
-    $('dot').className = 'dot wait'; setUI();
-    $('sym').value = cfg.symbol; $('symShow').textContent = cfg.symbol;
-    log('Menghubungkan ke akun...');
-    try {
-      await pollAccount();
-      log('Terhubung: akun #' + accInfo.login + ' (' + (isReal() ? 'REAL' : 'DEMO') + ')', 'g');
-      loadSymbols();
-      pollPositions().catch(fail);
-    } catch (e) {
-      connected = false; $('dot').className = 'dot err'; setUI(); fail(e);
-    }
+}
+`,
+'Lot dari risiko %':`double LotByRisk(double riskPct, int slPoints)
+{
+   double tv = MarketInfo(Symbol(), MODE_TICKVALUE);
+   double ts = MarketInfo(Symbol(), MODE_TICKSIZE);
+   double stp = MarketInfo(Symbol(), MODE_LOTSTEP);
+   double mn = MarketInfo(Symbol(), MODE_MINLOT);
+   if(tv <= 0 || ts <= 0 || stp <= 0 || slPoints <= 0) return(mn);
+   double pointVal = tv * Point / ts;
+   double lot = (AccountBalance() * riskPct / 100.0) / (slPoints * pointVal);
+   return(MathMax(mn, MathFloor(lot / stp) * stp));
+}
+`,
+'Trailing stop posisi':`void TrailPositions(int magic, int startPts, int stepPts)
+{
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+   {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES)) continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != magic) continue;
+      if(OrderType() == OP_BUY && Bid - OrderOpenPrice() >= startPts * Point)
+      {
+         double sl = NormalizeDouble(Bid - stepPts * Point, Digits);
+         if(sl > OrderStopLoss()) OrderModify(OrderTicket(), OrderOpenPrice(), sl, OrderTakeProfit(), 0, clrNONE);
+      }
+      if(OrderType() == OP_SELL && OrderOpenPrice() - Ask >= startPts * Point)
+      {
+         double sl2 = NormalizeDouble(Ask + stepPts * Point, Digits);
+         if(OrderStopLoss() == 0 || sl2 < OrderStopLoss()) OrderModify(OrderTicket(), OrderOpenPrice(), sl2, OrderTakeProfit(), 0, clrNONE);
+      }
+   }
+}
+`,
+'Filter jam trading':`bool InHours(int fromHour, int toHour)
+{
+   int h = TimeHour(TimeCurrent());
+   if(fromHour <= toHour) return(h >= fromHour && h < toHour);
+   return(h >= fromHour || h < toHour);
+}
+`,
+'Cek spread':`bool SpreadOK(int maxPts)
+{
+   return((Ask - Bid) / Point <= maxPts);
+}
+`};
+var sel=$('#snip');Object.keys(SN).forEach(function(k){var o=document.createElement('option');o.textContent=k;sel.appendChild(o)});
+sel.addEventListener('change',function(){var t=SN[sel.value];if(t){var s=ed.selectionStart;ed.setRangeText(t,s,ed.selectionEnd,'end');ed.focus();upd()}sel.selectedIndex=0});
+
+/* ---------- editor ---------- */
+function msg(t,c){var d=document.createElement('div');if(c)d.className=c;d.textContent=t;out.appendChild(d);out.scrollTop=out.scrollHeight}
+function clr(){out.textContent=''}
+function upd(){st.code=ed.value;st.name=nm.value;$('#info').textContent=ed.value.split('\n').length+' baris, '+ed.value.length+' karakter';try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}}
+function fname(){return (nm.value||'EA').replace(/[^\w-]/g,'_')+'.mq4'}
+ed.value=st.code;nm.value=st.name;upd();
+ed.addEventListener('input',upd);nm.addEventListener('input',upd);
+ed.addEventListener('keydown',function(e){if(e.key==='Tab'){e.preventDefault();ed.setRangeText('   ',ed.selectionStart,ed.selectionEnd,'end');upd()}});
+
+$('#bNew').addEventListener('click',function(){if(ed.value&&!confirm('Hapus isi editor?'))return;ed.value=SN['Kerangka EA kosong'];nm.value='EAbaru';clr();upd()});
+$('#bOpen').addEventListener('click',function(){$('#file').click()});
+$('#file').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){ed.value=String(r.result);nm.value=f.name.replace(/\.[^.]+$/,'');clr();upd();msg('Dibuka: '+f.name,'g')};r.readAsText(f);e.target.value=''});
+$('#bCopy').addEventListener('click',function(){clr();var done=function(){msg('Kode disalin.','g')};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ed.value).then(done,function(){ed.select();document.execCommand('copy');done()});else{ed.select();document.execCommand('copy');done()}});
+$('#bSave').addEventListener('click',async function(){
+  clr();var code=ed.value,fn=fname(),P=window.Capacitor&&window.Capacitor.Plugins;
+  if(P&&P.Filesystem&&P.Share){
+    try{var r=await P.Filesystem.writeFile({path:fn,data:code,directory:'CACHE',encoding:'utf8'});await P.Share.share({title:fn,url:r.uri,dialogTitle:'Simpan atau kirim '+fn});return}
+    catch(e){msg('Gagal membagikan: '+(e.message||e),'e')}
   }
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/plain'}));a.download=fn;document.body.appendChild(a);a.click();a.remove();msg('Diunduh: '+fn,'g');
+});
 
-  $('btnSave').addEventListener('click', function () {
-    var t = $('token').value.trim(), a = $('accId').value.trim();
-    if (!t || !a) { log('Token dan ID akun wajib diisi.', 'e'); return; }
-    var ml = parseFloat($('maxLot').value);
-    cfg.token = t; cfg.accountId = a; cfg.region = $('region').value;
-    cfg.maxLot = ml > 0 ? ml : 0.1; cfg.confirm = $('confirm').checked;
-    saveCfg(); connect();
-  });
-  $('btnClear').addEventListener('click', function () {
-    connected = false; accInfo = null; cfg.token = ''; cfg.accountId = ''; saveCfg(); fillSetup();
-    $('badge').classList.add('hide'); $('dot').className = 'dot'; setUI(); log('Data koneksi dihapus.');
-  });
-  $('btnSet').addEventListener('click', function () {
-    if (connected) { connected = false; fillSetup(); setUI(); }
-    else if (cfg.token) { connect(); }
-  });
-  $('sym').addEventListener('change', function () { setSymbol($('sym').value); });
-  $('btnBuy').addEventListener('click', function () { placeOrder('buy'); });
-  $('btnSell').addEventListener('click', function () { placeOrder('sell'); });
+/* ---------- cek dasar ---------- */
+function lint(c){
+  var o=[],s=[],i=0,ln=1,pr={')':'(',']':'[','}':'{'};
+  while(i<c.length){var ch=c[i],n=c[i+1];
+    if(ch==='\n'){ln++;i++;continue}
+    if(ch==='/'&&n==='/'){while(i<c.length&&c[i]!=='\n')i++;continue}
+    if(ch==='/'&&n==='*'){i+=2;while(i<c.length&&!(c[i]==='*'&&c[i+1]==='/')){if(c[i]==='\n')ln++;i++}i+=2;continue}
+    if(ch==='"'||ch==="'"){var q=ch;i++;while(i<c.length&&c[i]!==q&&c[i]!=='\n'){if(c[i]==='\\')i++;i++}if(c[i]!==q)o.push('Baris '+ln+': tanda kutip tidak ditutup');i++;continue}
+    if('([{'.indexOf(ch)>=0)s.push([ch,ln]);
+    else if(')]}'.indexOf(ch)>=0){var t=s.pop();if(!t||t[0]!==pr[ch])o.push('Baris '+ln+': "'+ch+'" tidak cocok')}
+    i++}
+  s.forEach(function(t){o.push('Baris '+t[1]+': "'+t[0]+'" tidak ditutup')});
+  if(!/\bOnTick\s*\(|\bstart\s*\(/.test(c))o.push('Tidak ada OnTick() atau start().');
+  if(/\b(CTrade|PositionSelect|PositionGetDouble|MqlTradeRequest)\b/.test(c))o.push('Terdeteksi sintaks MQL5. MT4 butuh MQL4.');
+  return o}
+$('#bChk').addEventListener('click',function(){clr();var r=lint(ed.value);if(!r.length)msg('Kurung, kutip, dan OnTick() beres. Kompilasi penuh tetap di MetaEditor (F7).','g');else r.forEach(function(x){msg(x,'e')})});
 
-  /* ---------- mulai ---------- */
-  fillSetup();
-  if (cfg.token && cfg.accountId) connect(); else setUI();
+/* ---------- generator ---------- */
+var F=[['name','Nama EA','JefzGrid','text'],['magic','Magic number',20261124],['lot','Lot awal',0.01],['mul','Pengali lot (marti)',2],['lv','Maks level',6],['maxlot','Lot maksimum',1],['grid','Jarak grid (poin)',200],['entry','Jarak order stop (poin)',150],['trail','Langkah trailing (poin)',50],['tp','Target profit keranjang',5],['eq','Stop ekuitas (%)',30],['spr','Maks spread (poin)',30]];
+var gf=$('#gf');
+F.forEach(function(f){var d=document.createElement('div');var l=document.createElement('label');l.textContent=f[1];l.htmlFor='g_'+f[0];var i=document.createElement('input');i.id='g_'+f[0];i.value=f[2];if(f[3]!=='text'){i.type='number';i.inputMode='decimal';i.step='any'}d.appendChild(l);d.appendChild(i);gf.appendChild(d)});
+$('#bGen').addEventListener('click',function(){
+  var p={},bad=null;
+  F.forEach(function(f){var v=$('#g_'+f[0]).value.trim();if(f[3]==='text')p[f[0]]=v.replace(/[^\w-]/g,'')||'JefzGrid';else{var n=parseFloat(v);if(isNaN(n)||n<0)bad=f[1];p[f[0]]=n}});
+  if(bad){alert('Nilai tidak valid: '+bad);return}
+  if(p.lv<1||p.mul<1||p.lot<=0){alert('Maks level minimal 1, pengali minimal 1, lot awal harus lebih dari 0.');return}
+  if(ed.value&&!confirm('Ganti isi editor dengan kode baru?'))return;
+  ed.value=ea(p);nm.value=p.name;clr();upd();tab('t-ed');msg('Kode dibuat. Uji di akun demo sebelum akun real.','g');
+});
+
+/* ---------- tab ---------- */
+function tab(id){document.querySelectorAll('section').forEach(function(s){s.classList.toggle('on',s.id===id)});document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.t===id)})}
+document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){tab(b.dataset.t)})});
 })();
 </script>
 </body>
