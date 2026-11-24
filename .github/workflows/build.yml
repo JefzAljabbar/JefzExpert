@@ -1,9 +1,12 @@
 name: Build JefzExpert APK
 
+# APK ini hanya cangkang yang membuka https://jefzaljabbar.github.io/JefzExpert/
+# Mengubah index.html TIDAK perlu build ulang. Build hanya jalan manual atau saat file ini berubah.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build.yml"
 
 permissions:
   contents: write
@@ -40,18 +43,21 @@ jobs:
 
       - name: Siapkan proyek Android (Capacitor)
         run: |
+          mkdir -p www
+          echo '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JefzExpert</title><body style="background:#131a24;color:#8a97a9;font:16px sans-serif;padding:24px">Memuat JefzExpert...</body>' > www/index.html
+          echo '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>JefzExpert</title><body style="background:#131a24;color:#e7ecf3;font:16px sans-serif;padding:24px"><h3>JefzExpert belum bisa dimuat</h3><p>Pembukaan pertama butuh internet. Setelah sekali terbuka, app tersimpan dan bisa dipakai offline.</p></body>' > www/error.html
           npm init -y
           npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/filesystem@6 @capacitor/share@6
-          npm i codemirror@5.65.16
-          mkdir -p www/cm
-          cp node_modules/codemirror/lib/codemirror.js node_modules/codemirror/lib/codemirror.css www/cm/
-          cp node_modules/codemirror/mode/clike/clike.js www/cm/
-          cp node_modules/codemirror/addon/hint/show-hint.js node_modules/codemirror/addon/hint/show-hint.css www/cm/
           cat > capacitor.config.json <<'JSON'
           {
             "appId": "com.jefz.expert",
             "appName": "JefzExpert",
             "webDir": "www",
+            "server": {
+              "url": "https://jefzaljabbar.github.io/JefzExpert/",
+              "errorPath": "error.html",
+              "cleartext": false
+            },
             "android": { "allowMixedContent": false }
           }
           JSON
@@ -74,4 +80,4 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk JefzExpert.apk
           gh release create "build-${{ github.run_number }}" JefzExpert.apk \
             --title "JefzExpert build ${{ github.run_number }}" \
-            --notes "Editor MQL4, preset, pustaka fungsi, impor/ekspor."
+            --notes "Cangkang APK: memuat situs Pages. Update HTML tidak perlu APK baru."
