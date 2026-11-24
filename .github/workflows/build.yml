@@ -23,20 +23,43 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Keystore tetap (agar APK bisa di-update tanpa uninstall)
+        run: |
+          if [ ! -f jefz.keystore ]; then
+            keytool -genkeypair -keystore jefz.keystore -alias androiddebugkey \
+              -storepass android -keypass android -keyalg RSA -keysize 2048 \
+              -validity 10000 -dname "CN=JefzExpert,O=Jefz,C=ID"
+            git config user.name "github-actions"
+            git config user.email "actions@users.noreply.github.com"
+            git add jefz.keystore
+            git commit -m "Tambah keystore tetap"
+            git push
+          fi
+          mkdir -p ~/.android
+          cp jefz.keystore ~/.android/debug.keystore
+
       - name: Siapkan proyek Android (Capacitor)
         run: |
           npm init -y
           npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6 @capacitor/filesystem@6 @capacitor/share@6
-          cat > capacitor.config.json <<'EOF'
+          npm i codemirror@5.65.16
+          mkdir -p www/cm
+          cp node_modules/codemirror/lib/codemirror.js node_modules/codemirror/lib/codemirror.css www/cm/
+          cp node_modules/codemirror/mode/clike/clike.js www/cm/
+          cp node_modules/codemirror/addon/hint/show-hint.js node_modules/codemirror/addon/hint/show-hint.css www/cm/
+          cat > capacitor.config.json <<'JSON'
           {
             "appId": "com.jefz.expert",
             "appName": "JefzExpert",
             "webDir": "www",
             "android": { "allowMixedContent": false }
           }
-          EOF
+          JSON
           npx cap add android
           npx cap sync android
+          VC=$(( $(date +%s) / 60 ))
+          sed -i "s/versionCode 1/versionCode $VC/; s/versionName \"1.0\"/versionName \"1.0.$VC\"/" android/app/build.gradle
+          grep -n "versionCode" android/app/build.gradle
 
       - name: Build APK
         working-directory: android
@@ -51,4 +74,4 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk JefzExpert.apk
           gh release create "build-${{ github.run_number }}" JefzExpert.apk \
             --title "JefzExpert build ${{ github.run_number }}" \
-            --notes "Tahap 1: editor MQL4, template, generator Grid+Marti+trailing, ekspor .mq4."
+            --notes "Editor MQL4, preset, pustaka fungsi, impor/ekspor."
