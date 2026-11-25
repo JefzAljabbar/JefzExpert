@@ -1,8 +1,7 @@
 // JefzExpert service worker: online = selalu ambil versi terbaru, offline = pakai salinan tersimpan.
-const V = 'jefzexpert-v1';
-const CDN = 'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/';
+const V = 'jefzexpert-v2';
 const LOCAL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
-const REMOTE = [CDN + 'lib/codemirror.js', CDN + 'lib/codemirror.css', CDN + 'mode/clike/clike.js'];
+const REMOTE = [];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
