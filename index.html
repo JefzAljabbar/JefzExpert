@@ -896,21 +896,79 @@ function ask(text,yes){return new Promise(function(res){modal('Konfirmasi',funct
 function nameBox(title,val){return new Promise(function(res){modal(title,function(m){var i=el('input',{value:val||''});i.style.width='100%';m.appendChild(i);m.appendChild(el('div',{className:'bt'},[btn('Batal',function(){close();res(null)}),btn('Simpan',function(){var v=i.value.trim();if(v){close();res(v)}},'ok')]));setTimeout(function(){i.focus()},60)})})}
 function put(t){close();cm.replaceSelection(t);cm.focus()}
 
+/* ---------- sinkron preset ke GitHub ---------- */
+var GK='jefzexpert.gh',GH={owner:'',repo:'',branch:'main',path:'jefz-presets.json',token:''};
+try{Object.assign(GH,JSON.parse(localStorage.getItem(GK)||'{}'))}catch(e){}
+function ghSave(){try{localStorage.setItem(GK,JSON.stringify(GH))}catch(e){}}
+function ghOn(){return !!(GH.owner&&GH.repo&&GH.token)}
+function b64e(s){var u=new TextEncoder().encode(s),r='';for(var i=0;i<u.length;i+=8192)r+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(r)}
+function b64d(s){var r=atob(s.replace(/\s/g,'')),u=new Uint8Array(r.length);for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return new TextDecoder().decode(u)}
+function ghUrl(){return 'https://api.github.com/repos/'+encodeURIComponent(GH.owner)+'/'+encodeURIComponent(GH.repo)+'/contents/'+GH.path.split('/').map(encodeURIComponent).join('/')}
+function ghHead(){return{Authorization:'Bearer '+GH.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}}
+async function ghErr(r){var m='';try{m=(await r.json()).message}catch(e){}
+  return r.status===401?'Token ditolak (401). Cek token.':r.status===403?'Ditolak (403): '+(m||'izin/limit')+'.':r.status===404?'Repo/branch tidak ditemukan, atau token tak punya akses (404).':r.status+(m?' '+m:'')}
+async function ghGet(){var r=await fetch(ghUrl()+'?ref='+encodeURIComponent(GH.branch)+'&t='+Date.now(),{headers:ghHead(),cache:'no-store'});
+  if(r.status===404)return{sha:null,data:{}};
+  if(!r.ok)throw new Error(await ghErr(r));
+  var j=await r.json(),d={};if(typeof j.content!=='string')throw new Error('File di GitHub terlalu besar atau bukan file.');
+  try{d=JSON.parse(b64d(j.content))}catch(e){throw new Error('Isi file di GitHub bukan JSON valid.')}
+  return{sha:j.sha,data:d.presets||{}}}
+async function ghPut(data,sha){var b={message:'Update preset JefzExpert',content:b64e(JSON.stringify({presets:data},null,1)),branch:GH.branch};if(sha)b.sha=sha;
+  var r=await fetch(ghUrl(),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},ghHead()),body:JSON.stringify(b)});
+  if(r.status===409||r.status===422)return false;
+  if(!r.ok)throw new Error(await ghErr(r));return true}
+/* satu fungsi untuk tarik+dorong: perubahan lokal yang tertunda (S.gp) dikirim, perubahan dari device lain ikut diambil */
+var ghBusy=null;
+function ghSync(quiet){if(!ghOn())return Promise.resolve(false);if(ghBusy)return ghBusy;
+  ghBusy=(async function(){try{
+    for(var t=0;t<3;t++){
+      var g=await ghGet(),rm=g.data,orig=JSON.stringify(rm),pend=S.gp||{},syn=S.gs||[],k;
+      for(k in pend){if(pend[k]&&k in S.presets)rm[k]=S.presets[k];else delete rm[k]}
+      for(k in S.presets)if(!(k in rm)&&syn.indexOf(k)<0&&!(k in pend))rm[k]=S.presets[k];
+      if(JSON.stringify(rm)!==orig&&!(await ghPut(rm,g.sha)))continue;
+      var before=JSON.stringify(S.presets);S.presets=rm;S.gp={};S.gs=Object.keys(rm);persist();
+      return JSON.stringify(rm)!==before}
+    throw new Error('Bentrok beberapa kali, coba lagi.')
+  }catch(e){if(!quiet)say('GitHub: '+(e.message||e),'var(--er)');return false}finally{ghBusy=null}})();return ghBusy}
+function ghUI(){modal('Sinkron GitHub',function(m){
+  m.appendChild(el('div',{className:'mu',textContent:'Pakai repo PRIVAT. Buat token fine-grained di GitHub (Settings > Developer settings), akses hanya repo itu, izin Contents: Read and write. Token disimpan di perangkat ini saja, jadi isi lagi di tiap perangkat.'}));
+  var f={};[['owner','Username / org GitHub','text'],['repo','Nama repo','text'],['branch','Branch','text'],['path','Nama file','text'],['token','Token','password']].forEach(function(a){
+    f[a[0]]=el('input',{type:a[2],value:GH[a[0]]||'',placeholder:a[1],autocomplete:'off',autocapitalize:'off',spellcheck:false});f[a[0]].style.cssText='width:100%;margin-top:6px';m.appendChild(f[a[0]])});
+  var st=el('div',{className:'mu',style:'margin-top:8px'});m.appendChild(st);
+  m.appendChild(el('div',{className:'bt'},[btn('Tutup',function(){presetUI()}),
+    ghOn()?btn('Putuskan',async function(){if(await ask('Putuskan GitHub di perangkat ini? Preset lokal tetap ada.','Ya, putuskan')){GH.token='';ghSave()}ghUI()}):el('span'),
+    btn('Simpan & sinkron',async function(){
+      var n={};for(var k in f)n[k]=f[k].value.trim();n.path=n.path||'jefz-presets.json';n.branch=n.branch||'main';
+      if(!n.owner||!n.repo||!n.token){st.textContent='Username, repo, dan token wajib diisi.';st.style.color='var(--er)';return}
+      Object.assign(GH,n);ghSave();st.textContent='Menyambung...';st.style.color='';
+      var was=Object.keys(S.presets).length;await ghSync(true);
+      try{await ghGet();st.textContent='Tersambung. Preset: '+Object.keys(S.presets).length+(was?' (digabung dengan yang di GitHub)':'');st.style.color='var(--ok)';say('GitHub tersambung.','var(--ok)')}
+      catch(e){st.textContent='Gagal: '+(e.message||e);st.style.color='var(--er)'}},'ok')]))})}
+function ghStatus(){return ghOn()?'GitHub: '+GH.owner+'/'+GH.repo:'GitHub belum disambungkan'}
+
 /* ---------- preset ---------- */
 var BI=[{n:'Kerangka EA kosong',t:'ea',c:SN['Kerangka EA kosong']},{n:'Grid + Marti + Trailing (EA lengkap)',t:'ea',c:defaultEA()}];
 (function(){var d=defaultEA();fns(d).forEach(function(f){if(f.name!=='OnInit'&&f.name!=='OnTick')BI.push({n:f.name+'()',t:'fn',c:d.slice(f.start,f.end)})});
   Object.keys(SN).forEach(function(k){if(k!=='Kerangka EA kosong')BI.push({n:k,t:'fn',c:SN[k]})})})();
-function presetUI(){modal('Preset kode',function(m){
-  m.appendChild(btn('Simpan kode sekarang sebagai preset',async function(){var n=await nameBox('Nama preset',S.name);if(!n){presetUI();return}if(S.presets[n]&&!(await ask('Preset "'+n+'" sudah ada. Timpa?'))){presetUI();return}S.presets[n]=cm.getValue();persist();say('Preset disimpan: '+n,'var(--ok)');presetUI()}));
+function presetOpen(){return $('#ov').classList.contains('on')&&($('#md h3')||{}).textContent==='Preset kode'}
+function presetUI(){renderPresets();if(ghOn())ghSync().then(function(ch){if(ch&&presetOpen())renderPresets()})}
+function afterChange(){renderPresets();if(ghOn())ghSync().then(function(){if(presetOpen())renderPresets()})}
+function renderPresets(){modal('Preset kode',function(m){
+  m.appendChild(el('div',{className:'r'},[el('span',{className:'mu',textContent:ghStatus()}),
+    ghOn()?btn('Sinkron',async function(){say('Sinkron...');await ghSync();if(!/^GitHub:/.test($('#msg').textContent))say('Sinkron selesai.','var(--ok)');renderPresets()}):el('span'),
+    btn(ghOn()?'Atur':'Sambungkan',ghUI)]));
+  m.appendChild(btn('Simpan kode sekarang sebagai preset',async function(){var n=await nameBox('Nama preset',S.name);if(!n){renderPresets();return}if(S.presets[n]&&!(await ask('Preset "'+n+'" sudah ada. Timpa?'))){renderPresets();return}S.presets[n]=cm.getValue();(S.gp=S.gp||{})[n]=1;persist();say('Preset disimpan: '+n+(ghOn()?' (menyinkron ke GitHub...)':''),'var(--ok)');
+    if(ghOn())ghSync().then(function(){if(!/^GitHub:/.test($('#msg').textContent))say('Preset disimpan & tersinkron ke GitHub: '+n,'var(--ok)')});afterChange()}));
   m.appendChild(el('h3',{textContent:'Bawaan',style:'margin-top:12px'}));
   BI.forEach(function(b){m.appendChild(el('div',{className:'r'},[el('span',{textContent:b.n}),
-    b.t==='ea'?btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+b.n+'"? Kode sekarang tertimpa.'))){presetUI();return}cm.setValue(b.c);close()})
+    b.t==='ea'?btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+b.n+'"? Kode sekarang tertimpa.'))){renderPresets();return}cm.setValue(b.c);close()})
              :btn('Sisipkan',function(){put('\n'+b.c+'\n')})]))});
   m.appendChild(el('h3',{textContent:'Preset saya',style:'margin-top:12px'}));
   var ks=Object.keys(S.presets);if(!ks.length)m.appendChild(el('div',{className:'mu',textContent:'Belum ada.'}));
   ks.forEach(function(k){m.appendChild(el('div',{className:'r'},[el('span',{textContent:k}),
-    btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+k+'"? Kode sekarang tertimpa.'))){presetUI();return}cm.setValue(S.presets[k]);close()}),
-    btn('Hapus',async function(){if(await ask('Hapus preset "'+k+'"?','Ya, hapus')){delete S.presets[k];persist()}presetUI()})]))})})}
+    btn('Muat',async function(){if(cm.getValue().trim()&&!(await ask('Ganti isi editor dengan "'+k+'"? Kode sekarang tertimpa.'))){renderPresets();return}cm.setValue(S.presets[k]);close()}),
+    btn('Hapus',async function(){if(await ask('Hapus preset "'+k+'"?'+(ghOn()?' Di GitHub juga ikut terhapus.':''),'Ya, hapus')){delete S.presets[k];(S.gp=S.gp||{})[k]=0;persist();afterChange();return}renderPresets()})]))})})}
+if(ghOn())ghSync(true);
 
 /* ---------- fungsi ---------- */
 function fnUI(){var F=fns();modal('Fungsi',function(m){
